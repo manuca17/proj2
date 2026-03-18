@@ -40,6 +40,7 @@ public class Proj2Application {
 
             testUtilizadorService(utilizadorService);
             testArtesaService(artesaService);
+            demoArtesaDuplicateEmailException(artesaService);
             testArtigoCatalogoService(artigoCatalogoService);
             testEncomendaCatalogoService(encomendaCatalogoService);
             testFichaTecnicaService(fichaTecnicaService);
@@ -94,6 +95,31 @@ public class Proj2Application {
     private void testArtesaService(ArtesaService service) {
         logger.info("Testando ArtesaService...");
         logger.info("findAll: {}", service.findAll());
+    }
+
+    private void demoArtesaDuplicateEmailException(ArtesaService service) {
+        logger.info("Demo de validação da Artesa: email duplicado...");
+
+        Artesa baseArtesa = service.findAll().stream().findFirst().orElseGet(() -> {
+            Artesa artesa = new Artesa();
+            artesa.setNome("Artesa Demo Console");
+            artesa.setEmail("demo.artesa." + System.currentTimeMillis() + "@teste.com");
+            Artesa saved = service.save(artesa);
+            logger.info("Artesa base criada para a demo com email {}", saved.getEmail());
+            return saved;
+        });
+
+        Artesa duplicada = new Artesa();
+        duplicada.setNome("Artesa Duplicada Demo");
+        duplicada.setEmail("  " + baseArtesa.getEmail().toUpperCase() + "  ");
+
+        try {
+            service.save(duplicada);
+            logger.error("A demo falhou: era suposto lançar exceção por email duplicado.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("[DEMO ARTESA] Exceção capturada com sucesso: " + e.getMessage());
+            logger.warn("Exceção esperada da demo da Artesa: {}", e.getMessage());
+        }
     }
 
     private void testArtigoCatalogoService(ArtigoCatalogoService service) {
