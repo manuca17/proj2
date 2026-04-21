@@ -1,9 +1,11 @@
 package com.example.proj2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "ficha_tecnica")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FichaTecnica {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -11,6 +13,7 @@ public class FichaTecnica {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "id_projeto")
     private ProjetoPersonalizado idProjeto;
 

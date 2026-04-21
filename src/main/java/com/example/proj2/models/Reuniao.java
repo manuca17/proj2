@@ -1,11 +1,13 @@
 package com.example.proj2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "reuniao")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Reuniao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

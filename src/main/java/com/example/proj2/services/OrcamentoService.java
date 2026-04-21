@@ -64,6 +64,10 @@ public class OrcamentoService {
             throw new IllegalArgumentException("Orçamento inválido.");
         }
 
+        if (orcamento.getIdProjeto() == null) {
+            throw new IllegalArgumentException("O projeto do orçamento é obrigatório.");
+        }
+
         BigDecimal valor = orcamento.getValorTotalEstimado();
         if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor do orçamento deve ser positivo.");

@@ -13,9 +13,19 @@ public interface MensagemChatRepository extends JpaRepository<MensagemChat, Inte
     @Query("SELECT m FROM MensagemChat m WHERE m.idProjeto = ?1")
     List<MensagemChat> findByIdProjeto(ProjetoPersonalizado projeto);
 
+    @Query("SELECT m FROM MensagemChat m " +
+            "LEFT JOIN FETCH m.idRemetenteUtilizador " +
+            "LEFT JOIN FETCH m.idRemetenteArtesa " +
+            "WHERE m.idProjeto.id = ?1 " +
+            "ORDER BY m.dataEnvio ASC")
+    List<MensagemChat> findByIdProjetoId(Integer projetoId);
+
     @Query("SELECT m FROM MensagemChat m WHERE m.idRemetenteUtilizador = ?1")
     List<MensagemChat> findByIdRemetenteUtilizador(Utilizador utilizador);
 
     @Query("SELECT m FROM MensagemChat m WHERE m.idRemetenteArtesa = ?1")
     List<MensagemChat> findByIdRemetenteArtesa(Artesa artesao);
+
+    @Query("SELECT COUNT(m) FROM MensagemChat m WHERE m.idProjeto.id = ?1")
+    long countByProjetoId(Integer projetoId);
 }

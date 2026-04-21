@@ -12,6 +12,9 @@ public interface ProjetoPersonalizadoRepository extends JpaRepository<ProjetoPer
     @Query("SELECT p FROM ProjetoPersonalizado p WHERE p.idUtilizador = ?1")
     List<ProjetoPersonalizado> findByIdUtilizador(Utilizador utilizador);
 
+    @Query("SELECT p FROM ProjetoPersonalizado p WHERE p.idUtilizador.id = ?1")
+    List<ProjetoPersonalizado> findByIdUtilizadorId(Integer utilizadorId);
+
     @Query("SELECT p FROM ProjetoPersonalizado p WHERE p.idArtesa = ?1")
     List<ProjetoPersonalizado> findByIdArtesa(Artesa artesao);
 }

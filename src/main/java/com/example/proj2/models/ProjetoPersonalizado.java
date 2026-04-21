@@ -1,5 +1,6 @@
 package com.example.proj2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -7,6 +8,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "projeto_personalizado")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ProjetoPersonalizado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,10 +17,12 @@ public class ProjetoPersonalizado {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_utilizador")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Utilizador idUtilizador;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_artesa")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Artesa idArtesa;
 
     @Column(name = "titulo_projeto", nullable = false)
@@ -34,6 +38,9 @@ public class ProjetoPersonalizado {
     @ColumnDefault("briefing")
     @Column(name = "estado_atual")
     private String estadoAtual;
+
+    @Column(name = "quantidade")
+    private Integer quantidade;
 
     public Integer getId() {
         return id;
@@ -89,6 +96,14 @@ public class ProjetoPersonalizado {
 
     public void setEstadoAtual(String estadoAtual) {
         this.estadoAtual = estadoAtual;
+    }
+
+    public Integer getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(Integer quantidade) {
+        this.quantidade = quantidade;
     }
 
 }

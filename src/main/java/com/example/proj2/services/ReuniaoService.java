@@ -23,6 +23,10 @@ public class ReuniaoService {
         return repository.findById(id);
     }
 
+    public Optional<Reuniao> findByIdWithRelations(Integer id) {
+        return repository.findByIdWithRelations(id);
+    }
+
     public Reuniao save(Reuniao reuniao) {
         return repository.save(reuniao);
     }
@@ -35,6 +39,10 @@ public class ReuniaoService {
         return repository.findByIdProjeto(projeto);
     }
 
+    public List<Reuniao> findByProjetoId(Integer projetoId) {
+        return repository.findByIdProjetoIdWithRelations(projetoId);
+    }
+
     public List<Reuniao> findByIdArtesa(Artesa artesao) {
         return repository.findByIdArtesa(artesao);
     }
@@ -44,13 +52,32 @@ public class ReuniaoService {
         if (existing.isPresent()) {
             Reuniao r = existing.get();
             r.setStatus(status);
-            return save(r);
+            Reuniao saved = save(r);
+            return findByIdWithRelations(saved.getId()).orElse(saved);
+        }
+        return null;
+    }
+
+    public Reuniao reschedule(Integer id, Reuniao changes) {
+        Optional<Reuniao> existing = findById(id);
+        if (existing.isPresent()) {
+            Reuniao r = existing.get();
+            r.setDataHora(changes.getDataHora());
+            if (changes.getLocal() != null) {
+                r.setLocal(changes.getLocal());
+            }
+            if (changes.getTipo() != null) {
+                r.setTipo(changes.getTipo());
+            }
+            r.setStatus("remarcada");
+            Reuniao saved = save(r);
+            return findByIdWithRelations(saved.getId()).orElse(saved);
         }
         return null;
     }
 
     public Reuniao scheduleMeeting(Reuniao reuniao) {
-        // Additional logic for scheduling
-        return save(reuniao);
+        Reuniao saved = save(reuniao);
+        return findByIdWithRelations(saved.getId()).orElse(saved);
     }
 }

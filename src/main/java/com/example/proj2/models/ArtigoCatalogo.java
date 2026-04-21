@@ -1,5 +1,6 @@
 package com.example.proj2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -7,6 +8,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "artigo_catalogo")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArtigoCatalogo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,6 +16,7 @@ public class ArtigoCatalogo {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "idProjeto"})
     @JoinColumn(name = "id_ficha_tecnica")
     private FichaTecnica idFichaTecnica;
 

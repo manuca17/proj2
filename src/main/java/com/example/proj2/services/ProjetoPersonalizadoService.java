@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Optional;
+import java.time.Instant;
 import com.example.proj2.models.ProjetoPersonalizado;
 import com.example.proj2.repository.ProjetoPersonalizadoRepository;
 import com.example.proj2.models.Utilizador;
@@ -24,6 +25,9 @@ public class ProjetoPersonalizadoService {
     }
 
     public ProjetoPersonalizado save(ProjetoPersonalizado projeto) {
+        if (projeto != null && projeto.getId() == null && projeto.getDataCriacao() == null) {
+            projeto.setDataCriacao(Instant.now());
+        }
         return repository.save(projeto);
     }
 
@@ -33,6 +37,10 @@ public class ProjetoPersonalizadoService {
 
     public List<ProjetoPersonalizado> findByIdUtilizador(Utilizador utilizador) {
         return repository.findByIdUtilizador(utilizador);
+    }
+
+    public List<ProjetoPersonalizado> findByUtilizadorId(Integer utilizadorId) {
+        return repository.findByIdUtilizadorId(utilizadorId);
     }
 
     public List<ProjetoPersonalizado> findByIdArtesa(Artesa artesao) {

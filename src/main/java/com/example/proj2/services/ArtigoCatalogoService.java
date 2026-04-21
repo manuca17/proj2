@@ -21,6 +21,10 @@ public class ArtigoCatalogoService {
         return repository.findById(id);
     }
 
+    public Optional<ArtigoCatalogo> findByIdWithFichaTecnica(Integer id) {
+        return repository.findByIdWithFichaTecnica(id);
+    }
+
     public ArtigoCatalogo save(ArtigoCatalogo artigo) {
         validateArtigo(artigo);
         return repository.save(artigo);

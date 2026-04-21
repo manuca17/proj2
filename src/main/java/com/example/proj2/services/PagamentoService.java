@@ -3,8 +3,10 @@ package com.example.proj2.services;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import com.example.proj2.models.Orcamento;
 import com.example.proj2.models.Pagamento;
 import com.example.proj2.repository.PagamentoRepository;
 
@@ -15,11 +17,11 @@ public class PagamentoService {
     private PagamentoRepository repository;
 
     public List<Pagamento> findAll() {
-        return repository.findAll();
+        return repository.findAllWithRelations();
     }
 
     public Optional<Pagamento> findById(Integer id) {
-        return repository.findById(id);
+        return repository.findByIdWithRelations(id);
     }
 
     public Pagamento save(Pagamento pagamento) {
@@ -44,6 +46,33 @@ public class PagamentoService {
 
     public Pagamento processPayment(Pagamento pagamento) {
         return save(pagamento);
+    }
+
+    public Pagamento processOrcamentoPayment(Orcamento orcamento, String tipoPagamento) {
+        if (orcamento == null) {
+            throw new IllegalArgumentException("Orçamento inválido.");
+        }
+
+        BigDecimal valor = orcamento.getValorTotalEstimado();
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O orçamento não tem valor válido para pagamento.");
+        }
+
+        Optional<Pagamento> existing = repository.findFirstByIdOrcamentoOrderByIdDesc(orcamento);
+        Pagamento pagamento = existing.orElseGet(Pagamento::new);
+
+        if (Boolean.TRUE.equals(pagamento.getPago())) {
+            throw new IllegalStateException("Este orçamento já foi pago.");
+        }
+
+        pagamento.setIdOrcamento(orcamento);
+        pagamento.setValor(valor);
+        pagamento.setTipoPagamento((tipoPagamento == null || tipoPagamento.isBlank()) ? "A definir" : tipoPagamento);
+        pagamento.setDataPagamento(Instant.now());
+        pagamento.setPago(true);
+
+        Pagamento saved = save(pagamento);
+        return findById(saved.getId()).orElse(saved);
     }
 
     private void validatePagamento(Pagamento pagamento) {

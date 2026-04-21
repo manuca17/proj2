@@ -36,6 +36,14 @@ public class MensagemChatService {
         return repository.findByIdProjeto(projeto);
     }
 
+    public List<MensagemChat> findByProjetoId(Integer projetoId) {
+        return repository.findByIdProjetoId(projetoId);
+    }
+
+    public long countByProjetoId(Integer projetoId) {
+        return repository.countByProjetoId(projetoId);
+    }
+
     public List<MensagemChat> findByIdRemetenteUtilizador(Utilizador utilizador) {
         return repository.findByIdRemetenteUtilizador(utilizador);
     }

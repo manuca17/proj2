@@ -37,6 +37,19 @@ public class ArtesaService {
         return repository.findByEmail(normalizeEmail(email));
     }
 
+    public Optional<Artesa> authenticateUser(String email, String password) {
+        if (password == null || password.isBlank()) {
+            return Optional.empty();
+        }
+
+        return findByEmail(email)
+            .filter(user -> password.equals(user.getPassword()));
+    }
+
+    public boolean authenticate(String email, String password) {
+        return authenticateUser(email, password).isPresent();
+    }
+
     private void validateArtesa(Artesa artesao) {
         if (artesao == null) {
             throw new IllegalArgumentException("Artesã inválida.");

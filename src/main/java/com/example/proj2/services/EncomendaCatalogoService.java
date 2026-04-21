@@ -6,11 +6,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.math.BigDecimal;
+import java.time.Instant;
+import com.example.proj2.models.ArtigoCatalogo;
 import com.example.proj2.models.EncomendaCatalogo;
 import com.example.proj2.models.ItemEncomenda;
 import com.example.proj2.models.Utilizador;
+import com.example.proj2.models.ProjetoPersonalizado;
+import com.example.proj2.repository.ArtigoCatalogoRepository;
 import com.example.proj2.repository.EncomendaCatalogoRepository;
 import com.example.proj2.repository.ItemEncomendaRepository;
+import com.example.proj2.repository.UtilizadorRepository;
+import com.example.proj2.repository.ProjetoPersonalizadoRepository;
 
 @Service
 public class EncomendaCatalogoService {
@@ -20,6 +26,15 @@ public class EncomendaCatalogoService {
 
     @Autowired
     private ItemEncomendaRepository itemRepository;
+
+    @Autowired
+    private ArtigoCatalogoRepository artigoRepository;
+
+    @Autowired
+    private UtilizadorRepository utilizadorRepository;
+
+    @Autowired
+    private ProjetoPersonalizadoRepository projetoRepository;
 
     public List<EncomendaCatalogo> findAll() {
         return repository.findAll();
@@ -39,6 +54,23 @@ public class EncomendaCatalogoService {
 
     public List<EncomendaCatalogo> findByIdUtilizador(Utilizador idUtilizador) {
         return repository.findByIdUtilizador(idUtilizador);
+    }
+
+    public List<EncomendaCatalogo> findByUtilizadorId(Integer utilizadorId) {
+        return repository.findByIdUtilizadorId(utilizadorId);
+    }
+
+    public Optional<EncomendaCatalogo> findCarrinhoByUtilizadorId(Integer utilizadorId) {
+        return repository.findCarrinhoByIdUtilizadorId(utilizadorId);
+    }
+
+    @Transactional
+    public void deleteCarrinhoByUtilizadorId(Integer utilizadorId) {
+        repository.findCarrinhoByIdUtilizadorId(utilizadorId).ifPresent(carrinho -> {
+            itemRepository.findByIdEncomendaId(carrinho.getId())
+                .forEach(item -> itemRepository.deleteById(item.getId()));
+            repository.deleteById(carrinho.getId());
+        });
     }
 
     public EncomendaCatalogo updateEstado(Integer id, String estado) {
@@ -74,5 +106,136 @@ public class EncomendaCatalogoService {
 
     public void removeItem(Integer itemId) {
         itemRepository.deleteById(itemId);
+    }
+
+    /**
+     * Adiciona item ao carrinho do utilizador.
+     * Se o utilizador não tiver carrinho, cria um novo com estado "carrinho".
+     * Se já existir item do mesmo artigo, soma a quantidade.
+     */
+    @Transactional
+    public ItemEncomenda addItemToCarrinho(Integer utilizadorId, Integer artigoId, Integer quantidade) {
+        Utilizador utilizador = utilizadorRepository.findById(utilizadorId)
+            .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado: " + utilizadorId));
+        ArtigoCatalogo artigo = artigoRepository.findById(artigoId)
+            .orElseThrow(() -> new IllegalArgumentException("Artigo não encontrado: " + artigoId));
+
+        // Busca ou cria encomenda com estado "carrinho"
+        EncomendaCatalogo carrinho = repository.findCarrinhoByIdUtilizadorId(utilizadorId)
+            .orElseGet(() -> {
+                EncomendaCatalogo nova = new EncomendaCatalogo();
+                nova.setIdUtilizador(utilizador);
+                nova.setEstado("carrinho");
+                nova.setDataPedido(Instant.now());
+                nova.setValorFinal(BigDecimal.ZERO);
+                return repository.save(nova);
+            });
+
+        // Se já existe item do mesmo artigo, incrementa quantidade
+        List<ItemEncomenda> existentes = itemRepository.findByIdEncomendaId(carrinho.getId());
+        Optional<ItemEncomenda> existente = existentes.stream()
+            .filter(i -> i.getIdArtigo().getId().equals(artigoId))
+            .findFirst();
+
+        ItemEncomenda item;
+        if (existente.isPresent()) {
+            item = existente.get();
+            item.setQuantidade(item.getQuantidade() + quantidade);
+        } else {
+            item = new ItemEncomenda();
+            item.setIdEncomenda(carrinho);
+            item.setIdArtigo(artigo);
+            item.setQuantidade(quantidade);
+        }
+        return itemRepository.save(item);
+    }
+
+    /**
+     * Converte o carrinho (estado="carrinho") em encomenda (estado="paga"),
+     * calcula o total e finaliza.
+     */
+    @Transactional
+    public EncomendaCatalogo checkout(Integer utilizadorId) {
+        return checkout(utilizadorId, null);
+    }
+
+    @Transactional
+    public EncomendaCatalogo checkout(Integer utilizadorId, Integer projetoId) {
+        EncomendaCatalogo carrinho = repository.findCarrinhoByIdUtilizadorId(utilizadorId)
+            .orElseThrow(() -> new IllegalStateException("O carrinho está vazio."));
+
+        List<ItemEncomenda> itens = itemRepository.findByIdEncomendaWithArtigo(carrinho);
+        if (itens.isEmpty()) {
+            throw new IllegalStateException("O carrinho está vazio.");
+        }
+
+        BigDecimal total = itens.stream()
+            .map(i -> i.getIdArtigo().getPrecoUnitario().multiply(BigDecimal.valueOf(i.getQuantidade())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Decrementar stock de cada artigo
+        for (ItemEncomenda item : itens) {
+            ArtigoCatalogo artigo = item.getIdArtigo();
+            int novoStock = artigo.getStock() - item.getQuantidade();
+            if (novoStock < 0) {
+                throw new IllegalStateException(
+                    "Stock insuficiente para o artigo: " + artigo.getNome()
+                    + " (disponível: " + artigo.getStock() + ", pedido: " + item.getQuantidade() + ")"
+                );
+            }
+            artigo.setStock(novoStock);
+            artigoRepository.save(artigo);
+        }
+
+        carrinho.setValorFinal(total);
+        carrinho.setEstado("pago");
+        carrinho.setDataPedido(Instant.now());
+        if (projetoId != null) {
+            projetoRepository.findById(projetoId).ifPresent(carrinho::setIdProjeto);
+        }
+        return repository.save(carrinho);
+    }
+
+    @Transactional
+    public EncomendaCatalogo reencomendarProjeto(Integer projetoId, Integer quantidade) {
+        ProjetoPersonalizado projeto = projetoRepository.findById(projetoId)
+            .orElseThrow(() -> new IllegalArgumentException("Projeto inválido."));
+
+        Optional<EncomendaCatalogo> ultimaOpt = repository.findFirstByIdProjetoIdAndEstadoNotOrderByDataPedidoDesc(projetoId, "carrinho");
+
+        EncomendaCatalogo nova = new EncomendaCatalogo();
+        Utilizador utilizador = ultimaOpt.map(EncomendaCatalogo::getIdUtilizador).orElse(projeto.getIdUtilizador());
+        if (utilizador == null) {
+            throw new IllegalArgumentException("Projeto sem utilizador associado.");
+        }
+        nova.setIdUtilizador(utilizador);
+        nova.setIdProjeto(projeto);
+        nova.setEstado("carrinho");
+        nova.setDataPedido(Instant.now());
+        nova.setValorFinal(BigDecimal.ZERO);
+        nova = repository.save(nova);
+
+        if (ultimaOpt.isEmpty()) {
+            return nova;
+        }
+
+        List<ItemEncomenda> itens = itemRepository.findByIdEncomendaWithArtigo(ultimaOpt.get());
+        if (itens.isEmpty()) {
+            return nova;
+        }
+
+        for (ItemEncomenda item : itens) {
+            ItemEncomenda novo = new ItemEncomenda();
+            novo.setIdEncomenda(nova);
+            novo.setIdArtigo(item.getIdArtigo());
+            if (quantidade != null && quantidade > 0) {
+                novo.setQuantidade(quantidade);
+            } else {
+                novo.setQuantidade(item.getQuantidade());
+            }
+            itemRepository.save(novo);
+        }
+
+        return nova;
     }
 }

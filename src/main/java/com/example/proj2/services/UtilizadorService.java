@@ -37,9 +37,17 @@ public class UtilizadorService {
         return repository.findByEmail(normalizeEmail(email));
     }
 
+    public Optional<Utilizador> authenticateUser(String email, String password) {
+        if (password == null || password.isBlank()) {
+            return Optional.empty();
+        }
+
+        return findByEmail(email)
+            .filter(user -> password.equals(user.getPassword()));
+    }
+
     public boolean authenticate(String email, String password) {
-        Optional<Utilizador> user = findByEmail(email);
-        return user.isPresent() && user.get().getPassword().equals(password);
+        return authenticateUser(email, password).isPresent();
     }
 
     public Utilizador updateProfile(Integer id, Utilizador updated) {

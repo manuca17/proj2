@@ -1,10 +1,15 @@
 package com.example.proj2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "item_encomenda")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ItemEncomenda {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -12,10 +17,12 @@ public class ItemEncomenda {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "idUtilizador"})
     @JoinColumn(name = "id_encomenda")
     private EncomendaCatalogo idEncomenda;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "idFichaTecnica"})
     @JoinColumn(name = "id_artigo")
     private ArtigoCatalogo idArtigo;
 
@@ -53,6 +60,16 @@ public class ItemEncomenda {
 
     public void setQuantidade(Integer quantidade) {
         this.quantidade = quantidade;
+    }
+
+    @JsonProperty("nomeProduto")
+    public String getNomeProduto() {
+        return idArtigo == null ? null : idArtigo.getNome();
+    }
+
+    @JsonProperty("precoUnitario")
+    public BigDecimal getPrecoUnitario() {
+        return idArtigo == null ? null : idArtigo.getPrecoUnitario();
     }
 
 }

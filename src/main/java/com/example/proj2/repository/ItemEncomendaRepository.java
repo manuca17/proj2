@@ -11,6 +11,12 @@ public interface ItemEncomendaRepository extends JpaRepository<ItemEncomenda, In
     @Query("SELECT i FROM ItemEncomenda i WHERE i.idEncomenda = ?1")
     List<ItemEncomenda> findByIdEncomenda(EncomendaCatalogo encomenda);
 
+    @Query("SELECT i FROM ItemEncomenda i WHERE i.idEncomenda.id = ?1")
+    List<ItemEncomenda> findByIdEncomendaId(Integer encomendaId);
+
+    @Query("SELECT i FROM ItemEncomenda i JOIN FETCH i.idArtigo WHERE i.idEncomenda.id = ?1")
+    List<ItemEncomenda> findByIdEncomendaIdWithArtigo(Integer encomendaId);
+
     @Query("SELECT i FROM ItemEncomenda i JOIN FETCH i.idArtigo WHERE i.idEncomenda = ?1")
     List<ItemEncomenda> findByIdEncomendaWithArtigo(EncomendaCatalogo encomenda);
 }

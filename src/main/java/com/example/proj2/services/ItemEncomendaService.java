@@ -29,6 +29,9 @@ public class ItemEncomendaService {
         repository.deleteById(id);
     }
 
+    public List<ItemEncomenda> findByEncomendaId(Integer encomendaId) {
+        return repository.findByIdEncomendaIdWithArtigo(encomendaId);
+    }
 
     public ItemEncomenda updateQuantity(Integer id, Integer quantity) {
         Optional<ItemEncomenda> existing = findById(id);

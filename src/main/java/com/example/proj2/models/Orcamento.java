@@ -1,5 +1,6 @@
 package com.example.proj2.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -8,6 +9,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "orcamento")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Orcamento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,6 +38,9 @@ public class Orcamento {
 
     @Column(name = "observacoes", length = Integer.MAX_VALUE)
     private String observacoes;
+
+    @Column(name = "tipo")
+    private String tipo;
 
     public Integer getId() {
         return id;
@@ -91,6 +96,14 @@ public class Orcamento {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
     }
 
 }
