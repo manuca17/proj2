@@ -61,12 +61,12 @@ public class EncomendaCatalogoService {
     }
 
     public Optional<EncomendaCatalogo> findCarrinhoByUtilizadorId(Integer utilizadorId) {
-        return repository.findCarrinhoByIdUtilizadorId(utilizadorId);
+        return repository.findFirstByIdUtilizadorIdAndEstadoOrderByDataPedidoDesc(utilizadorId, "carrinho");
     }
 
     @Transactional
     public void deleteCarrinhoByUtilizadorId(Integer utilizadorId) {
-        repository.findCarrinhoByIdUtilizadorId(utilizadorId).ifPresent(carrinho -> {
+        repository.findFirstByIdUtilizadorIdAndEstadoOrderByDataPedidoDesc(utilizadorId, "carrinho").ifPresent(carrinho -> {
             itemRepository.findByIdEncomendaId(carrinho.getId())
                 .forEach(item -> itemRepository.deleteById(item.getId()));
             repository.deleteById(carrinho.getId());
@@ -121,7 +121,7 @@ public class EncomendaCatalogoService {
             .orElseThrow(() -> new IllegalArgumentException("Artigo não encontrado: " + artigoId));
 
         // Busca ou cria encomenda com estado "carrinho"
-        EncomendaCatalogo carrinho = repository.findCarrinhoByIdUtilizadorId(utilizadorId)
+        EncomendaCatalogo carrinho = repository.findFirstByIdUtilizadorIdAndEstadoOrderByDataPedidoDesc(utilizadorId, "carrinho")
             .orElseGet(() -> {
                 EncomendaCatalogo nova = new EncomendaCatalogo();
                 nova.setIdUtilizador(utilizador);
@@ -161,7 +161,7 @@ public class EncomendaCatalogoService {
 
     @Transactional
     public EncomendaCatalogo checkout(Integer utilizadorId, Integer projetoId) {
-        EncomendaCatalogo carrinho = repository.findCarrinhoByIdUtilizadorId(utilizadorId)
+        EncomendaCatalogo carrinho = repository.findFirstByIdUtilizadorIdAndEstadoOrderByDataPedidoDesc(utilizadorId, "carrinho")
             .orElseThrow(() -> new IllegalStateException("O carrinho está vazio."));
 
         List<ItemEncomenda> itens = itemRepository.findByIdEncomendaWithArtigo(carrinho);

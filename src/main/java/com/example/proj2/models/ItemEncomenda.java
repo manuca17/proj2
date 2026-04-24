@@ -22,7 +22,7 @@ public class ItemEncomenda {
     private EncomendaCatalogo idEncomenda;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "idFichaTecnica"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fichasTecnicas"})
     @JoinColumn(name = "id_artigo")
     private ArtigoCatalogo idArtigo;
 

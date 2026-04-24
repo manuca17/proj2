@@ -69,15 +69,11 @@ public class FichaTecnicaController {
     // GET /api/fichas-tecnicas/artigo/{artigoId}
     @GetMapping("/artigo/{artigoId}")
     public ResponseEntity<?> getByArtigoId(@PathVariable Integer artigoId) {
-        ArtigoCatalogo artigo = artigoService.findByIdWithFichaTecnica(artigoId).orElse(null);
+        ArtigoCatalogo artigo = artigoService.findById(artigoId).orElse(null);
         if (artigo == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artigo não encontrado.");
         }
-        FichaTecnica ficha = artigo.getIdFichaTecnica();
-        if (ficha == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
-        }
-        return ResponseEntity.ok(ficha);
+        return ResponseEntity.ok(service.findByArtigoCatalogo(artigo));
     }
 
     // POST /api/fichas-tecnicas/artigo/{artigoId}
@@ -91,51 +87,44 @@ public class FichaTecnicaController {
             return ResponseEntity.badRequest().body("Payload de ficha técnica inválido.");
         }
 
+        ficha.setArtigoCatalogo(artigo);
         FichaTecnica saved = service.save(ficha);
-        artigo.setIdFichaTecnica(saved);
-        artigoService.save(artigo);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // PUT /api/fichas-tecnicas/artigo/{artigoId}
-    @PutMapping("/artigo/{artigoId}")
-    public ResponseEntity<?> updateByArtigoId(@PathVariable Integer artigoId, @RequestBody FichaTecnica ficha) {
-        ArtigoCatalogo artigo = artigoService.findByIdWithFichaTecnica(artigoId).orElse(null);
+    // PUT /api/fichas-tecnicas/artigo/{artigoId}/{fichaId}
+    @PutMapping("/artigo/{artigoId}/{fichaId}")
+    public ResponseEntity<?> updateByArtigoId(@PathVariable Integer artigoId, @PathVariable Integer fichaId) {
+        ArtigoCatalogo artigo = artigoService.findById(artigoId).orElse(null);
         if (artigo == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artigo não encontrado.");
         }
-        if (ficha == null) {
-            return ResponseEntity.badRequest().body("Payload de ficha técnica inválido.");
-        }
 
-        FichaTecnica existente = artigo.getIdFichaTecnica();
+        FichaTecnica existente = service.findById(fichaId).orElse(null);
         if (existente == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
         }
 
-        FichaTecnica updated = service.updateTechnicalDetails(existente.getId(), ficha);
-        if (updated == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
-        }
-        return ResponseEntity.ok(updated);
+        existente.setArtigoCatalogo(artigo);
+        FichaTecnica saved = service.save(existente);
+        return ResponseEntity.ok(saved);
     }
 
-    // DELETE /api/fichas-tecnicas/artigo/{artigoId}
-    @DeleteMapping("/artigo/{artigoId}")
-    public ResponseEntity<?> deleteByArtigoId(@PathVariable Integer artigoId) {
-        ArtigoCatalogo artigo = artigoService.findByIdWithFichaTecnica(artigoId).orElse(null);
+    // DELETE /api/fichas-tecnicas/artigo/{artigoId}/{fichaId}
+    @DeleteMapping("/artigo/{artigoId}/{fichaId}")
+    public ResponseEntity<?> deleteByArtigoId(@PathVariable Integer artigoId, @PathVariable Integer fichaId) {
+        ArtigoCatalogo artigo = artigoService.findById(artigoId).orElse(null);
         if (artigo == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artigo não encontrado.");
         }
 
-        FichaTecnica ficha = artigo.getIdFichaTecnica();
-        if (ficha == null) {
+        FichaTecnica ficha = service.findById(fichaId).orElse(null);
+        if (ficha == null || ficha.getArtigoCatalogo() == null || !ficha.getArtigoCatalogo().getId().equals(artigoId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
         }
 
-        artigo.setIdFichaTecnica(null);
-        artigoService.save(artigo);
-        service.deleteById(ficha.getId());
+        ficha.setArtigoCatalogo(null);
+        service.save(ficha);
         return ResponseEntity.noContent().build();
     }
 

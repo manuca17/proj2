@@ -41,11 +41,9 @@ public class ArtigoCatalogoController {
             return ResponseEntity.badRequest().body("Payload de artigo inválido.");
         }
 
-        FichaTecnica ficha = resolveFichaTecnica(artigo);
-        if (ficha == null && artigo.getIdFichaTecnica() != null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
+        if (artigo.getFichasTecnicas() != null) {
+            artigo.getFichasTecnicas().forEach(ficha -> ficha.setArtigoCatalogo(artigo));
         }
-        artigo.setIdFichaTecnica(ficha);
 
         try {
             ArtigoCatalogo saved = service.save(artigo);
@@ -80,12 +78,9 @@ public class ArtigoCatalogoController {
             existing.setVisivel(artigo.getVisivel());
         }
 
-        FichaTecnica ficha = resolveFichaTecnica(artigo);
-        if (ficha == null && artigo.getIdFichaTecnica() != null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
-        }
-        if (artigo.getIdFichaTecnica() != null) {
-            existing.setIdFichaTecnica(ficha);
+        if (artigo.getFichasTecnicas() != null) {
+            artigo.getFichasTecnicas().forEach(ficha -> ficha.setArtigoCatalogo(existing));
+            existing.setFichasTecnicas(artigo.getFichasTecnicas());
         }
 
         try {
@@ -118,19 +113,8 @@ public class ArtigoCatalogoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ficha técnica não encontrada.");
         }
 
-        artigo.setIdFichaTecnica(ficha);
-        try {
-            ArtigoCatalogo saved = service.save(artigo);
-            return ResponseEntity.ok(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    private FichaTecnica resolveFichaTecnica(ArtigoCatalogo artigo) {
-        if (artigo.getIdFichaTecnica() == null || artigo.getIdFichaTecnica().getId() == null) {
-            return null;
-        }
-        return fichaTecnicaService.findById(artigo.getIdFichaTecnica().getId()).orElse(null);
+        ficha.setArtigoCatalogo(artigo);
+        fichaTecnicaService.save(ficha);
+        return ResponseEntity.ok(artigo);
     }
 }

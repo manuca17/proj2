@@ -17,6 +17,11 @@ public class FichaTecnica {
     @JoinColumn(name = "id_projeto")
     private ProjetoPersonalizado idProjeto;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "fichasTecnicas"})
+    @JoinColumn(name = "id_artigo")
+    private ArtigoCatalogo artigoCatalogo;
+
     @Column(name = "tipo_barro", length = 100)
     private String tipoBarro;
 
@@ -55,6 +60,14 @@ public class FichaTecnica {
 
     public void setIdProjeto(ProjetoPersonalizado idProjeto) {
         this.idProjeto = idProjeto;
+    }
+
+    public ArtigoCatalogo getArtigoCatalogo() {
+        return artigoCatalogo;
+    }
+
+    public void setArtigoCatalogo(ArtigoCatalogo artigoCatalogo) {
+        this.artigoCatalogo = artigoCatalogo;
     }
 
     public String getTipoBarro() {

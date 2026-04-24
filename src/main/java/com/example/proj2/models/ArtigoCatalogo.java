@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "artigo_catalogo")
@@ -15,10 +17,8 @@ public class ArtigoCatalogo {
     @Column(name = "id_artigo", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "idProjeto"})
-    @JoinColumn(name = "id_ficha_tecnica")
-    private FichaTecnica idFichaTecnica;
+    @OneToMany(mappedBy = "artigoCatalogo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FichaTecnica> fichasTecnicas = new ArrayList<>();
 
     @Column(name = "nome", nullable = false)
     private String nome;
@@ -42,12 +42,12 @@ public class ArtigoCatalogo {
         this.id = id;
     }
 
-    public FichaTecnica getIdFichaTecnica() {
-        return idFichaTecnica;
+    public List<FichaTecnica> getFichasTecnicas() {
+        return fichasTecnicas;
     }
 
-    public void setIdFichaTecnica(FichaTecnica idFichaTecnica) {
-        this.idFichaTecnica = idFichaTecnica;
+    public void setFichasTecnicas(List<FichaTecnica> fichasTecnicas) {
+        this.fichasTecnicas = fichasTecnicas == null ? new ArrayList<>() : fichasTecnicas;
     }
 
     public String getNome() {

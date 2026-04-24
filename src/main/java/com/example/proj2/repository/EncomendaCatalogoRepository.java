@@ -15,8 +15,7 @@ public interface EncomendaCatalogoRepository extends JpaRepository<EncomendaCata
     @Query("SELECT e FROM EncomendaCatalogo e WHERE e.idUtilizador.id = ?1")
     List<EncomendaCatalogo> findByIdUtilizadorId(Integer utilizadorId);
 
-    @Query("SELECT e FROM EncomendaCatalogo e WHERE e.idUtilizador.id = ?1 AND e.estado = 'carrinho'")
-    java.util.Optional<EncomendaCatalogo> findCarrinhoByIdUtilizadorId(Integer utilizadorId);
+    Optional<EncomendaCatalogo> findFirstByIdUtilizadorIdAndEstadoOrderByDataPedidoDesc(Integer utilizadorId, String estado);
 
     Optional<EncomendaCatalogo> findFirstByIdProjetoIdAndEstadoNotOrderByDataPedidoDesc(Integer projetoId, String estado);
 }

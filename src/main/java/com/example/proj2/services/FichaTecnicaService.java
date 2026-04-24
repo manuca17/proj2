@@ -1,5 +1,6 @@
 package com.example.proj2.services;
 
+import com.example.proj2.models.ArtigoCatalogo;
 import com.example.proj2.models.ProjetoPersonalizado;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,10 @@ public class FichaTecnicaService {
 
     public List<FichaTecnica> findByIdProjeto(ProjetoPersonalizado idProjeto) {
         return repository.findByIdProjeto(idProjeto);
+    }
+
+    public List<FichaTecnica> findByArtigoCatalogo(ArtigoCatalogo artigoCatalogo) {
+        return repository.findByArtigoCatalogo(artigoCatalogo);
     }
 
     public FichaTecnica updateTechnicalDetails(Integer id, FichaTecnica updated) {
