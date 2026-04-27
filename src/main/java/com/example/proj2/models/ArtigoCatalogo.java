@@ -47,7 +47,13 @@ public class ArtigoCatalogo {
     }
 
     public void setFichasTecnicas(List<FichaTecnica> fichasTecnicas) {
-        this.fichasTecnicas = fichasTecnicas == null ? new ArrayList<>() : fichasTecnicas;
+        this.fichasTecnicas.clear();
+        if (fichasTecnicas != null) {
+            for (FichaTecnica ficha : fichasTecnicas) {
+                ficha.setArtigoCatalogo(this);
+                this.fichasTecnicas.add(ficha);
+            }
+        }
     }
 
     public String getNome() {

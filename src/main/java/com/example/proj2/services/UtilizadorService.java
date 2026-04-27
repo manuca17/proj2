@@ -50,6 +50,11 @@ public class UtilizadorService {
         return authenticateUser(email, password).isPresent();
     }
 
+    public Utilizador registerUser(Utilizador utilizador) {
+        validateRegistration(utilizador);
+        return save(utilizador);
+    }
+
     public Utilizador updateProfile(Integer id, Utilizador updated) {
         Optional<Utilizador> existing = findById(id);
         if (existing.isPresent()) {
@@ -91,6 +96,24 @@ public class UtilizadorService {
         }
 
         utilizador.setNif(nif.trim());
+    }
+
+    private void validateRegistration(Utilizador utilizador) {
+        if (utilizador == null) {
+            throw new IllegalArgumentException("Utilizador inválido.");
+        }
+
+        String nomeEmpresa = utilizador.getNomeEmpresa();
+        if (nomeEmpresa == null || nomeEmpresa.isBlank()) {
+            throw new IllegalArgumentException("O nome da empresa é obrigatório.");
+        }
+
+        String password = utilizador.getPassword();
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("A password é obrigatória.");
+        }
+
+        utilizador.setNomeEmpresa(nomeEmpresa.trim());
     }
 
     private String normalizeEmail(String email) {

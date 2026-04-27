@@ -79,7 +79,6 @@ public class ArtigoCatalogoController {
         }
 
         if (artigo.getFichasTecnicas() != null) {
-            artigo.getFichasTecnicas().forEach(ficha -> ficha.setArtigoCatalogo(existing));
             existing.setFichasTecnicas(artigo.getFichasTecnicas());
         }
 

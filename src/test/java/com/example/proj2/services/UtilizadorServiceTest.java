@@ -64,6 +64,32 @@ class UtilizadorServiceTest {
         verify(repository).save(utilizador);
     }
 
+    @Test
+    void registerUserShouldRejectMissingNomeEmpresa() {
+        Utilizador utilizador = createUtilizador(null, "user@email.com", "123456789");
+        utilizador.setNomeEmpresa("   ");
+
+        when(repository.findByEmail("user@email.com")).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.registerUser(utilizador));
+
+        assertEquals("O nome da empresa é obrigatório.", exception.getMessage());
+        verify(repository, never()).save(utilizador);
+    }
+
+    @Test
+    void registerUserShouldRejectMissingPassword() {
+        Utilizador utilizador = createUtilizador(null, "user@email.com", "123456789");
+        utilizador.setPassword(" ");
+
+        when(repository.findByEmail("user@email.com")).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.registerUser(utilizador));
+
+        assertEquals("A password é obrigatória.", exception.getMessage());
+        verify(repository, never()).save(utilizador);
+    }
+
     private Utilizador createUtilizador(Integer id, String email, String nif) {
         Utilizador utilizador = new Utilizador();
         utilizador.setId(id);
