@@ -41,7 +41,13 @@ public class ProjetoPersonalizadoController {
     }
 
     @PostMapping
-    public ResponseEntity<ProjetoPersonalizado> create(@RequestBody ProjetoPersonalizado projeto) {
+    public ResponseEntity<?> create(@RequestBody ProjetoPersonalizado projeto) {
+        if (projeto == null || projeto.getTituloProjeto() == null || projeto.getTituloProjeto().isBlank()) {
+            return ResponseEntity.badRequest().body("Campo 'tituloProjeto' é obrigatório.");
+        }
+        if (projeto.getEstadoAtual() == null || projeto.getEstadoAtual().isBlank()) {
+            projeto.setEstadoAtual("briefing");
+        }
         ProjetoPersonalizado saved = service.save(projeto);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }

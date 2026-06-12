@@ -37,10 +37,16 @@ public class ProjetoPersonalizadoService {
     }
 
     public ProjetoPersonalizado save(ProjetoPersonalizado projeto) {
-        if (projeto != null && projeto.getId() == null && projeto.getDataCriacao() == null) {
-            projeto.setDataCriacao(Instant.now());
+        if (projeto != null && projeto.getId() == null) {
+            if (projeto.getDataCriacao() == null) {
+                projeto.setDataCriacao(Instant.now());
+            }
+            if (projeto.getEstadoAtual() == null || projeto.getEstadoAtual().isBlank()) {
+                projeto.setEstadoAtual("briefing");
+            }
         }
-        return repository.save(projeto);
+        ProjetoPersonalizado saved = repository.save(projeto);
+        return repository.findByIdWithRelations(saved.getId()).orElse(saved);
     }
 
     public void deleteById(Integer id) {
