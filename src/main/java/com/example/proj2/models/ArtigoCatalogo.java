@@ -17,7 +17,7 @@ public class ArtigoCatalogo {
     @Column(name = "id_artigo", nullable = false)
     private Integer id;
 
-    @OneToMany(mappedBy = "artigoCatalogo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "artigoCatalogo", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<FichaTecnica> fichasTecnicas = new ArrayList<>();
 
     @Column(name = "nome", nullable = false)

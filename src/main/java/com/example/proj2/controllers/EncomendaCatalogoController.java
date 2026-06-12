@@ -65,13 +65,7 @@ public class EncomendaCatalogoController {
 
     // PATCH /api/encomendas-catalogo/{id}/estado
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<?> updateEstadoPatch(@PathVariable Integer id, @RequestBody Map<String, String> body) {
-        return updateEstadoInternal(id, body);
-    }
-
-    // PUT /api/encomendas-catalogo/{id}/estado
-    @PutMapping("/{id}/estado")
-    public ResponseEntity<?> updateEstadoPut(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> updateEstado(@PathVariable Integer id, @RequestBody Map<String, String> body) {
         return updateEstadoInternal(id, body);
     }
 

@@ -15,10 +15,6 @@ public class Reuniao {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_artesa")
-    private Artesa idArtesa;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_projeto")
     private ProjetoPersonalizado idProjeto;
 
@@ -41,14 +37,6 @@ public class Reuniao {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Artesa getIdArtesa() {
-        return idArtesa;
-    }
-
-    public void setIdArtesa(Artesa idArtesa) {
-        this.idArtesa = idArtesa;
     }
 
     public ProjetoPersonalizado getIdProjeto() {

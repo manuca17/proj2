@@ -12,9 +12,11 @@ import com.example.proj2.models.EncomendaCatalogo;
 import com.example.proj2.models.ItemEncomenda;
 import com.example.proj2.models.Utilizador;
 import com.example.proj2.models.ProjetoPersonalizado;
+import com.example.proj2.models.Pagamento;
 import com.example.proj2.repository.ArtigoCatalogoRepository;
 import com.example.proj2.repository.EncomendaCatalogoRepository;
 import com.example.proj2.repository.ItemEncomendaRepository;
+import com.example.proj2.repository.PagamentoRepository;
 import com.example.proj2.repository.UtilizadorRepository;
 import com.example.proj2.repository.ProjetoPersonalizadoRepository;
 
@@ -35,6 +37,9 @@ public class EncomendaCatalogoService {
 
     @Autowired
     private ProjetoPersonalizadoRepository projetoRepository;
+
+    @Autowired
+    private PagamentoRepository pagamentoRepository;
 
     public List<EncomendaCatalogo> findAll() {
         return repository.findAll();
@@ -193,7 +198,17 @@ public class EncomendaCatalogoService {
         if (projetoId != null) {
             projetoRepository.findById(projetoId).ifPresent(carrinho::setIdProjeto);
         }
-        return repository.save(carrinho);
+        EncomendaCatalogo saved = repository.save(carrinho);
+
+        Pagamento pagamento = new Pagamento();
+        pagamento.setIdEncomenda(saved);
+        pagamento.setValor(total);
+        pagamento.setTipoPagamento("A definir");
+        pagamento.setDataPagamento(Instant.now());
+        pagamento.setPago(true);
+        pagamentoRepository.save(pagamento);
+
+        return saved;
     }
 
     @Transactional

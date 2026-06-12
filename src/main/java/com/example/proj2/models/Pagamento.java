@@ -17,12 +17,21 @@ public class Pagamento {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_orcamento")
-    private Orcamento idOrcamento;
+    @JoinColumn(name = "id_projeto")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private ProjetoPersonalizado idProjeto;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_encomenda")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private EncomendaCatalogo idEncomenda;
+
+    // FASE_1, FASE_2, FASE_3 para projetos; null para encomendas de catálogo
+    @Column(name = "fase", length = 20)
+    private String fase;
+
+    @Column(name = "descricao", length = Integer.MAX_VALUE)
+    private String descricao;
 
     @Column(name = "valor", nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
@@ -46,12 +55,12 @@ public class Pagamento {
         this.id = id;
     }
 
-    public Orcamento getIdOrcamento() {
-        return idOrcamento;
+    public ProjetoPersonalizado getIdProjeto() {
+        return idProjeto;
     }
 
-    public void setIdOrcamento(Orcamento idOrcamento) {
-        this.idOrcamento = idOrcamento;
+    public void setIdProjeto(ProjetoPersonalizado idProjeto) {
+        this.idProjeto = idProjeto;
     }
 
     public EncomendaCatalogo getIdEncomenda() {
@@ -60,6 +69,22 @@ public class Pagamento {
 
     public void setIdEncomenda(EncomendaCatalogo idEncomenda) {
         this.idEncomenda = idEncomenda;
+    }
+
+    public String getFase() {
+        return fase;
+    }
+
+    public void setFase(String fase) {
+        this.fase = fase;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 
     public BigDecimal getValor() {
@@ -93,5 +118,4 @@ public class Pagamento {
     public void setPago(Boolean pago) {
         this.pago = pago;
     }
-
 }

@@ -39,9 +39,6 @@ public class ProjetoPersonalizado {
     @Column(name = "estado_atual")
     private String estadoAtual;
 
-    @Column(name = "quantidade")
-    private Integer quantidade;
-
     public Integer getId() {
         return id;
     }
@@ -96,14 +93,6 @@ public class ProjetoPersonalizado {
 
     public void setEstadoAtual(String estadoAtual) {
         this.estadoAtual = estadoAtual;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
     }
 
 }

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import com.example.proj2.models.Reuniao;
 import com.example.proj2.repository.ReuniaoRepository;
-import com.example.proj2.models.Artesa;
 import com.example.proj2.models.ProjetoPersonalizado;
 
 @Service
@@ -41,10 +40,6 @@ public class ReuniaoService {
 
     public List<Reuniao> findByProjetoId(Integer projetoId) {
         return repository.findByIdProjetoIdWithRelations(projetoId);
-    }
-
-    public List<Reuniao> findByIdArtesa(Artesa artesao) {
-        return repository.findByIdArtesa(artesao);
     }
 
     public Reuniao updateStatus(Integer id, String status) {

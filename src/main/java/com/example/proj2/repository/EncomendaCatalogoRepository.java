@@ -9,10 +9,10 @@ import java.util.Optional;
 
 public interface EncomendaCatalogoRepository extends JpaRepository<EncomendaCatalogo, Integer> {
 
-    @Query("SELECT e FROM EncomendaCatalogo e WHERE e.idUtilizador = ?1")
+    @Query("SELECT e FROM EncomendaCatalogo e WHERE e.idUtilizador = ?1 AND e.estado != 'carrinho'")
     List<EncomendaCatalogo> findByIdUtilizador(Utilizador idUtilizador);
 
-    @Query("SELECT e FROM EncomendaCatalogo e WHERE e.idUtilizador.id = ?1")
+    @Query("SELECT e FROM EncomendaCatalogo e WHERE e.idUtilizador.id = ?1 AND e.estado != 'carrinho'")
     List<EncomendaCatalogo> findByIdUtilizadorId(Integer utilizadorId);
 
     Optional<EncomendaCatalogo> findFirstByIdUtilizadorIdAndEstadoOrderByDataPedidoDesc(Integer utilizadorId, String estado);

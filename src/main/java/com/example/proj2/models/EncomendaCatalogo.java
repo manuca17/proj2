@@ -96,7 +96,7 @@ public class EncomendaCatalogo {
 
     @JsonProperty("estadoPagamento")
     public String getEstadoPagamento() {
-        return "paga".equalsIgnoreCase(estado) ? "PAGO" : "PENDENTE";
+        return "pago".equalsIgnoreCase(estado) ? "PAGO" : "PENDENTE";
     }
 
     @JsonProperty("paymentStatus")
