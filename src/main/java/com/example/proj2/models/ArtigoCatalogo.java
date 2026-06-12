@@ -20,6 +20,11 @@ public class ArtigoCatalogo {
     @OneToMany(mappedBy = "artigoCatalogo", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<FichaTecnica> fichasTecnicas = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_projeto_origem")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private ProjetoPersonalizado idProjetoOrigem;
+
     @Column(name = "nome", nullable = false)
     private String nome;
 
@@ -86,6 +91,14 @@ public class ArtigoCatalogo {
 
     public void setVisivel(Boolean visivel) {
         this.visivel = visivel;
+    }
+
+    public ProjetoPersonalizado getIdProjetoOrigem() {
+        return idProjetoOrigem;
+    }
+
+    public void setIdProjetoOrigem(ProjetoPersonalizado idProjetoOrigem) {
+        this.idProjetoOrigem = idProjetoOrigem;
     }
 
 }

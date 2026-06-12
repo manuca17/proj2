@@ -69,8 +69,13 @@ public class ProjetoPersonalizadoController {
         if (projeto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Projeto não encontrado.");
         }
-        if (mensagem == null || mensagem.getConteudo() == null || mensagem.getConteudo().isBlank()) {
-            return ResponseEntity.badRequest().body("Campo 'conteudo' é obrigatório.");
+        boolean semConteudo = mensagem == null || mensagem.getConteudo() == null || mensagem.getConteudo().isBlank();
+        boolean semFoto = mensagem == null || mensagem.getUrlFoto() == null || mensagem.getUrlFoto().isBlank();
+        if (semConteudo && semFoto) {
+            return ResponseEntity.badRequest().body("A mensagem deve ter conteúdo ou foto.");
+        }
+        if (semConteudo) {
+            mensagem.setConteudo("");
         }
 
         // Força a associação ao projeto do path para evitar inconsistências no payload.

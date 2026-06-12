@@ -12,6 +12,9 @@ public interface FichaTecnicaRepository extends JpaRepository<FichaTecnica, Inte
     @Query("SELECT f FROM FichaTecnica f WHERE f.idProjeto = ?1")
     List<FichaTecnica> findByIdProjeto(ProjetoPersonalizado idProjeto);
 
+    @Query("SELECT f FROM FichaTecnica f WHERE f.idProjeto.id = ?1")
+    List<FichaTecnica> findByIdProjetoId(Integer idProjeto);
+
     @Query("SELECT f FROM FichaTecnica f WHERE f.artigoCatalogo = ?1")
     List<FichaTecnica> findByArtigoCatalogo(com.example.proj2.models.ArtigoCatalogo artigoCatalogo);
 }

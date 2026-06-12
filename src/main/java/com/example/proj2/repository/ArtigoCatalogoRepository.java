@@ -13,4 +13,7 @@ public interface ArtigoCatalogoRepository extends JpaRepository<ArtigoCatalogo, 
 
     @Query("SELECT a FROM ArtigoCatalogo a LEFT JOIN FETCH a.fichasTecnicas WHERE a.id = ?1")
     Optional<ArtigoCatalogo> findByIdWithFichasTecnicas(Integer id);
+
+    @Query("SELECT a FROM ArtigoCatalogo a WHERE a.idProjetoOrigem = ?1")
+    Optional<ArtigoCatalogo> findByIdProjetoOrigem(com.example.proj2.models.ProjetoPersonalizado projeto);
 }

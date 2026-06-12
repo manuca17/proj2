@@ -81,18 +81,24 @@ public class ProjetoPersonalizadoService {
     }
 
     private void concluirProjeto(ProjetoPersonalizado projeto) {
+        System.out.println(">>> concluirProjeto chamado para projeto id=" + projeto.getId() + " titulo=" + projeto.getTituloProjeto());
+
         ArtigoCatalogo artigo = new ArtigoCatalogo();
         artigo.setNome(projeto.getTituloProjeto());
         artigo.setPrecoUnitario(BigDecimal.ZERO);
         artigo.setStock(1);
         artigo.setVisivel(false);
+        artigo.setIdProjetoOrigem(projeto);
         ArtigoCatalogo savedArtigo = artigoRepository.save(artigo);
+        System.out.println(">>> Artigo criado id=" + savedArtigo.getId());
 
-        List<FichaTecnica> fichas = fichaRepository.findByIdProjeto(projeto);
+        List<FichaTecnica> fichas = fichaRepository.findByIdProjetoId(projeto.getId());
+        System.out.println(">>> Fichas encontradas: " + fichas.size());
         for (FichaTecnica ficha : fichas) {
             ficha.setIdProjeto(null);
             ficha.setArtigoCatalogo(savedArtigo);
             fichaRepository.save(ficha);
+            System.out.println(">>> Ficha id=" + ficha.getId() + " transferida para artigo id=" + savedArtigo.getId());
         }
     }
 

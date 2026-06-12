@@ -2,6 +2,7 @@ package com.example.proj2.services;
 
 import com.example.proj2.models.ArtigoCatalogo;
 import com.example.proj2.models.ProjetoPersonalizado;
+import com.example.proj2.repository.ArtigoCatalogoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
@@ -15,6 +16,9 @@ public class FichaTecnicaService {
     @Autowired
     private FichaTecnicaRepository repository;
 
+    @Autowired
+    private ArtigoCatalogoRepository artigoCatalogoRepository;
+
     public List<FichaTecnica> findAll() {
         return repository.findAll();
     }
@@ -24,6 +28,18 @@ public class FichaTecnicaService {
     }
 
     public FichaTecnica save(FichaTecnica ficha) {
+        // Se a ficha está a ser associada a um projeto já concluído,
+        // redireciona automaticamente para o artigo gerado na conclusão.
+        if (ficha.getIdProjeto() != null) {
+            ProjetoPersonalizado projeto = ficha.getIdProjeto();
+            if ("concluido".equalsIgnoreCase(projeto.getEstadoAtual())) {
+                Optional<ArtigoCatalogo> artigo = artigoCatalogoRepository.findByIdProjetoOrigem(projeto);
+                if (artigo.isPresent()) {
+                    ficha.setIdProjeto(null);
+                    ficha.setArtigoCatalogo(artigo.get());
+                }
+            }
+        }
         return repository.save(ficha);
     }
 
