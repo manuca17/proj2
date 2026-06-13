@@ -20,6 +20,10 @@ public class ArtigoCatalogo {
     @OneToMany(mappedBy = "artigoCatalogo", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<FichaTecnica> fichasTecnicas = new ArrayList<>();
 
+    @OneToMany(mappedBy = "idArtigo", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
+    private List<ArtigoFoto> fotos = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_projeto_origem")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -96,13 +100,11 @@ public class ArtigoCatalogo {
         this.visivel = visivel;
     }
 
-    public String getFotoUrl() {
-        return fotoUrl;
-    }
+    public String getFotoUrl() { return fotoUrl; }
+    public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
 
-    public void setFotoUrl(String fotoUrl) {
-        this.fotoUrl = fotoUrl;
-    }
+    public List<ArtigoFoto> getFotos() { return fotos; }
+    public void setFotos(List<ArtigoFoto> fotos) { this.fotos = fotos; }
 
     public ProjetoPersonalizado getIdProjetoOrigem() {
         return idProjetoOrigem;

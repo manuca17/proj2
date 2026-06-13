@@ -44,6 +44,14 @@ CREATE TABLE IF NOT EXISTS artigo_catalogo (
     id_projeto_origem  INTEGER         REFERENCES projeto_personalizado(id_projeto)
 );
 
+-- artigo_foto
+CREATE TABLE IF NOT EXISTS artigo_foto (
+    id_foto   SERIAL PRIMARY KEY,
+    id_artigo INTEGER NOT NULL REFERENCES artigo_catalogo(id_artigo) ON DELETE CASCADE,
+    url       VARCHAR(500) NOT NULL,
+    ordem     INTEGER DEFAULT 0
+);
+
 -- ficha_tecnica
 CREATE TABLE IF NOT EXISTS ficha_tecnica (
     id_ficha             SERIAL PRIMARY KEY,

@@ -1,21 +1,17 @@
 package com.example.proj2.controllers;
 
 import com.example.proj2.models.ArtigoCatalogo;
+import com.example.proj2.models.ArtigoFoto;
 import com.example.proj2.models.FichaTecnica;
+import com.example.proj2.repository.ArtigoFotoRepository;
 import com.example.proj2.services.ArtigoCatalogoService;
 import com.example.proj2.services.FichaTecnicaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/artigos-catalogo")
@@ -23,10 +19,12 @@ public class ArtigoCatalogoController {
 
     private final ArtigoCatalogoService service;
     private final FichaTecnicaService fichaTecnicaService;
+    private final ArtigoFotoRepository fotoRepository;
 
-    public ArtigoCatalogoController(ArtigoCatalogoService service, FichaTecnicaService fichaTecnicaService) {
+    public ArtigoCatalogoController(ArtigoCatalogoService service, FichaTecnicaService fichaTecnicaService, ArtigoFotoRepository fotoRepository) {
         this.service = service;
         this.fichaTecnicaService = fichaTecnicaService;
+        this.fotoRepository = fotoRepository;
     }
 
     @GetMapping
@@ -100,6 +98,42 @@ public class ArtigoCatalogoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artigo não encontrado.");
         }
         service.deleteById(artigoId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // POST /api/artigos-catalogo/{artigoId}/fotos
+    @PostMapping("/{artigoId}/fotos")
+    public ResponseEntity<?> addFoto(@PathVariable Integer artigoId, @RequestBody Map<String, Object> body) {
+        ArtigoCatalogo artigo = service.findById(artigoId).orElse(null);
+        if (artigo == null) return ResponseEntity.notFound().build();
+        String url = (String) body.get("url");
+        if (url == null || url.isBlank()) return ResponseEntity.badRequest().body("URL inválido.");
+        int ordem = fotoRepository.findByIdArtigoIdOrderByOrdemAsc(artigoId).size();
+        ArtigoFoto foto = new ArtigoFoto();
+        foto.setIdArtigo(artigo);
+        foto.setUrl(url);
+        foto.setOrdem(ordem);
+        // Actualiza foto_url com a primeira foto adicionada
+        if (artigo.getFotoUrl() == null || artigo.getFotoUrl().isBlank()) {
+            artigo.setFotoUrl(url);
+            service.save(artigo);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(fotoRepository.save(foto));
+    }
+
+    // DELETE /api/artigos-catalogo/{artigoId}/fotos/{fotoId}
+    @DeleteMapping("/{artigoId}/fotos/{fotoId}")
+    public ResponseEntity<?> deleteFoto(@PathVariable Integer artigoId, @PathVariable Integer fotoId) {
+        ArtigoFoto foto = fotoRepository.findById(fotoId).orElse(null);
+        if (foto == null) return ResponseEntity.notFound().build();
+        fotoRepository.delete(foto);
+        // Se era a foto de capa, atualiza para a próxima disponível
+        ArtigoCatalogo artigo = service.findById(artigoId).orElse(null);
+        if (artigo != null) {
+            List<ArtigoFoto> restantes = fotoRepository.findByIdArtigoIdOrderByOrdemAsc(artigoId);
+            artigo.setFotoUrl(restantes.isEmpty() ? null : restantes.get(0).getUrl());
+            service.save(artigo);
+        }
         return ResponseEntity.noContent().build();
     }
 
