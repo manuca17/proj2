@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -42,8 +46,9 @@ public class UploadController {
         }
 
         try {
+            byte[] bytes = comprimirImagem(ficheiro.getBytes());
             Map<?, ?> result = cloudinary.uploader().upload(
-                    ficheiro.getBytes(),
+                    bytes,
                     ObjectUtils.asMap("folder", "taca-lab")
             );
             String url = (String) result.get("secure_url");
@@ -51,6 +56,37 @@ public class UploadController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Erro ao fazer upload da imagem.");
         }
+    }
+
+    private byte[] comprimirImagem(byte[] original) throws IOException {
+        BufferedImage img = ImageIO.read(new java.io.ByteArrayInputStream(original));
+        if (img == null) return original;
+
+        int maxDim = 1920;
+        int w = img.getWidth(), h = img.getHeight();
+        if (w > maxDim || h > maxDim) {
+            double ratio = Math.min((double) maxDim / w, (double) maxDim / h);
+            w = (int) (w * ratio);
+            h = (int) (h * ratio);
+            Image scaled = img.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            BufferedImage resized = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+            resized.getGraphics().drawImage(scaled, 0, 0, null);
+            img = resized;
+        }
+
+        // Se já é pequena o suficiente, devolve os bytes originais
+        if (original.length <= 8 * 1024 * 1024) return original;
+
+        // Comprimir como JPEG com qualidade 85%
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        javax.imageio.ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+        javax.imageio.ImageWriteParam params = writer.getDefaultWriteParam();
+        params.setCompressionMode(javax.imageio.ImageWriteParam.MODE_EXPLICIT);
+        params.setCompressionQuality(0.85f);
+        writer.setOutput(ImageIO.createImageOutputStream(out));
+        writer.write(null, new javax.imageio.IIOImage(img, null, null), params);
+        writer.dispose();
+        return out.toByteArray();
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
