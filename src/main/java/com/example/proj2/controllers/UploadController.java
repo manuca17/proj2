@@ -1,30 +1,33 @@
 package com.example.proj2.controllers;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
 public class UploadController {
 
-    @Value("${app.upload.dir:uploads}")
-    private String uploadDir;
+    private final Cloudinary cloudinary;
 
-    /**
-     * POST /api/upload/imagem
-     * Form-data: campo "ficheiro" com a imagem
-     * Devolve: { "url": "/uploads/nome-gerado.jpg" }
-     */
+    public UploadController(
+            @Value("${cloudinary.cloud-name}") String cloudName,
+            @Value("${cloudinary.api-key}") String apiKey,
+            @Value("${cloudinary.api-secret}") String apiSecret) {
+        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName,
+                "api_key", apiKey,
+                "api_secret", apiSecret,
+                "secure", true
+        ));
+    }
+
     @PostMapping("/imagem")
     public ResponseEntity<?> uploadImagem(@RequestParam("ficheiro") MultipartFile ficheiro) {
         if (ficheiro == null || ficheiro.isEmpty()) {
@@ -37,24 +40,14 @@ public class UploadController {
         }
 
         try {
-            Path dir = Paths.get(uploadDir).toAbsolutePath().normalize();
-            Files.createDirectories(dir);
-
-            String extensao = obterExtensao(ficheiro.getOriginalFilename());
-            String nomeUnico = UUID.randomUUID() + extensao;
-            Path destino = dir.resolve(nomeUnico);
-            Files.copy(ficheiro.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-
-            String url = "/uploads/" + nomeUnico;
+            Map<?, ?> result = cloudinary.uploader().upload(
+                    ficheiro.getBytes(),
+                    ObjectUtils.asMap("folder", "taca-lab")
+            );
+            String url = (String) result.get("secure_url");
             return ResponseEntity.ok(Map.of("url", url));
-
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("Erro ao guardar o ficheiro.");
+            return ResponseEntity.internalServerError().body("Erro ao fazer upload da imagem.");
         }
-    }
-
-    private String obterExtensao(String nomeOriginal) {
-        if (nomeOriginal == null || !nomeOriginal.contains(".")) return ".jpg";
-        return nomeOriginal.substring(nomeOriginal.lastIndexOf("."));
     }
 }
