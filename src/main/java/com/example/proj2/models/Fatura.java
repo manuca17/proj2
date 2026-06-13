@@ -21,6 +21,11 @@ public class Fatura {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private EncomendaCatalogo idEncomenda;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_pagamento", unique = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Pagamento idPagamento;
+
     @Column(name = "numero_fatura", unique = true)
     private String numeroFatura;
 
@@ -81,4 +86,7 @@ public class Fatura {
 
     public Instant getDataEmissao() { return dataEmissao; }
     public void setDataEmissao(Instant dataEmissao) { this.dataEmissao = dataEmissao; }
+
+    public Pagamento getIdPagamento() { return idPagamento; }
+    public void setIdPagamento(Pagamento idPagamento) { this.idPagamento = idPagamento; }
 }

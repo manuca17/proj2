@@ -10,4 +10,6 @@ public interface FaturaRepository extends JpaRepository<Fatura, Integer> {
 
     @Query("SELECT f FROM Fatura f LEFT JOIN FETCH f.idEncomenda WHERE f.idEncomenda.id = ?1")
     Optional<Fatura> findByIdEncomendaId(Integer encomendaId);
+
+    Optional<Fatura> findByIdPagamentoId(Integer pagamentoId);
 }

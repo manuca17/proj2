@@ -26,6 +26,14 @@ public class FaturaController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    // GET /api/faturas/pagamento/{pagamentoId}
+    @GetMapping("/pagamento/{pagamentoId}")
+    public ResponseEntity<?> getByPagamento(@PathVariable Integer pagamentoId) {
+        return faturaService.findByPagamentoId(pagamentoId)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     // POST /api/faturas
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String, Object> body) {
@@ -41,6 +49,28 @@ public class FaturaController {
 
             Fatura fatura = faturaService.createOrUpdate(
                 encomendaId, nome, nif, morada, cidade, codigoPostal, telefone, metodoPagamento
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(fatura);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // POST /api/faturas/pagamento
+    @PostMapping("/pagamento")
+    public ResponseEntity<?> createForPagamento(@RequestBody Map<String, Object> body) {
+        try {
+            Integer pagamentoId = Integer.parseInt(body.get("id_pagamento").toString());
+            String nome = (String) body.get("nome");
+            String nif = (String) body.getOrDefault("nif", "");
+            String morada = (String) body.get("morada");
+            String cidade = (String) body.get("cidade");
+            String codigoPostal = (String) body.get("codigo_postal");
+            String telefone = (String) body.getOrDefault("telefone", "");
+            String metodoPagamento = (String) body.getOrDefault("metodo_pagamento", "A definir");
+
+            Fatura fatura = faturaService.createOrUpdateForPagamento(
+                pagamentoId, nome, nif, morada, cidade, codigoPostal, telefone, metodoPagamento
             );
             return ResponseEntity.status(HttpStatus.CREATED).body(fatura);
         } catch (IllegalArgumentException e) {
