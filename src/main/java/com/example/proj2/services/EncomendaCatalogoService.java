@@ -78,10 +78,31 @@ public class EncomendaCatalogoService {
         });
     }
 
+    @Transactional
     public EncomendaCatalogo updateEstado(Integer id, String estado) {
         Optional<EncomendaCatalogo> existing = findById(id);
         if (existing.isPresent()) {
             EncomendaCatalogo e = existing.get();
+            if ("pago".equals(estado) && !"pago".equals(e.getEstado())) {
+                List<ItemEncomenda> itens = itemRepository.findByIdEncomendaWithArtigo(e);
+                for (ItemEncomenda item : itens) {
+                    ArtigoCatalogo artigo = item.getIdArtigo();
+                    int novoStock = Math.max(0, artigo.getStock() - item.getQuantidade());
+                    artigo.setStock(novoStock);
+                    artigoRepository.save(artigo);
+                }
+                boolean jaTemPagamento = pagamentoRepository.findByIdEncomenda(e)
+                        .map(p -> Boolean.TRUE.equals(p.getPago())).orElse(false);
+                if (!jaTemPagamento) {
+                    Pagamento pagamento = new Pagamento();
+                    pagamento.setIdEncomenda(e);
+                    pagamento.setValor(e.getValorFinal() != null ? e.getValorFinal() : BigDecimal.ZERO);
+                    pagamento.setTipoPagamento("A definir");
+                    pagamento.setDataPagamento(Instant.now());
+                    pagamento.setPago(true);
+                    pagamentoRepository.save(pagamento);
+                }
+            }
             e.setEstado(estado);
             return save(e);
         }
@@ -178,37 +199,13 @@ public class EncomendaCatalogoService {
             .map(i -> i.getIdArtigo().getPrecoUnitario().multiply(BigDecimal.valueOf(i.getQuantidade())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Decrementar stock de cada artigo
-        for (ItemEncomenda item : itens) {
-            ArtigoCatalogo artigo = item.getIdArtigo();
-            int novoStock = artigo.getStock() - item.getQuantidade();
-            if (novoStock < 0) {
-                throw new IllegalStateException(
-                    "Stock insuficiente para o artigo: " + artigo.getNome()
-                    + " (disponível: " + artigo.getStock() + ", pedido: " + item.getQuantidade() + ")"
-                );
-            }
-            artigo.setStock(novoStock);
-            artigoRepository.save(artigo);
-        }
-
         carrinho.setValorFinal(total);
-        carrinho.setEstado("pago");
+        carrinho.setEstado("pendente");
         carrinho.setDataPedido(Instant.now());
         if (projetoId != null) {
             projetoRepository.findById(projetoId).ifPresent(carrinho::setIdProjeto);
         }
-        EncomendaCatalogo saved = repository.save(carrinho);
-
-        Pagamento pagamento = new Pagamento();
-        pagamento.setIdEncomenda(saved);
-        pagamento.setValor(total);
-        pagamento.setTipoPagamento("A definir");
-        pagamento.setDataPagamento(Instant.now());
-        pagamento.setPago(true);
-        pagamentoRepository.save(pagamento);
-
-        return saved;
+        return repository.save(carrinho);
     }
 
     public List<EncomendaCatalogo> findPendentesAprovacao() {
@@ -248,6 +245,14 @@ public class EncomendaCatalogoService {
         if (!"aprovado".equals(encomenda.getEstado())) {
             throw new IllegalStateException("Esta encomenda não está aprovada para pagamento.");
         }
+        List<ItemEncomenda> itens = itemRepository.findByIdEncomendaWithArtigo(encomenda);
+        for (ItemEncomenda item : itens) {
+            ArtigoCatalogo artigo = item.getIdArtigo();
+            int novoStock = Math.max(0, artigo.getStock() - item.getQuantidade());
+            artigo.setStock(novoStock);
+            artigoRepository.save(artigo);
+        }
+
         encomenda.setEstado("pago");
 
         Pagamento pagamento = new Pagamento();
