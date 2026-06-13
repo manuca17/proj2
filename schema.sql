@@ -97,6 +97,21 @@ CREATE TABLE IF NOT EXISTS mensagem_chat (
     data_envio               TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+-- fatura
+CREATE TABLE IF NOT EXISTS fatura (
+    id_fatura        SERIAL PRIMARY KEY,
+    id_encomenda     INTEGER UNIQUE REFERENCES encomenda_catalogo(id_encomenda),
+    numero_fatura    VARCHAR(30)  UNIQUE,
+    nome             VARCHAR(255),
+    nif              VARCHAR(20),
+    morada           TEXT,
+    cidade           VARCHAR(100),
+    codigo_postal    VARCHAR(10),
+    telefone         VARCHAR(20),
+    metodo_pagamento VARCHAR(50),
+    data_emissao     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
 -- pagamento
 CREATE TABLE IF NOT EXISTS pagamento (
     id_pagamento   SERIAL PRIMARY KEY,
