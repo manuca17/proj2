@@ -242,6 +242,26 @@ public class EncomendaCatalogoService {
     }
 
     @Transactional
+    public EncomendaCatalogo pagarEncomenda(Integer encomendaId) {
+        EncomendaCatalogo encomenda = repository.findById(encomendaId)
+            .orElseThrow(() -> new IllegalArgumentException("Encomenda não encontrada."));
+        if (!"aprovado".equals(encomenda.getEstado())) {
+            throw new IllegalStateException("Esta encomenda não está aprovada para pagamento.");
+        }
+        encomenda.setEstado("pago");
+
+        Pagamento pagamento = new Pagamento();
+        pagamento.setIdEncomenda(encomenda);
+        pagamento.setValor(encomenda.getValorFinal() != null ? encomenda.getValorFinal() : java.math.BigDecimal.ZERO);
+        pagamento.setTipoPagamento("A definir");
+        pagamento.setDataPagamento(Instant.now());
+        pagamento.setPago(true);
+        pagamentoRepository.save(pagamento);
+
+        return repository.save(encomenda);
+    }
+
+    @Transactional
     public EncomendaCatalogo reencomendarProjeto(Integer projetoId, Integer quantidade) {
         ProjetoPersonalizado projeto = projetoRepository.findById(projetoId)
             .orElseThrow(() -> new IllegalArgumentException("Projeto inválido."));

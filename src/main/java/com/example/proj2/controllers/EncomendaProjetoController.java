@@ -72,4 +72,17 @@ public class EncomendaProjetoController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
+
+    // PUT /api/encomendas/{id}/pagar  (client)
+    @PutMapping("/{id}/pagar")
+    public ResponseEntity<?> pagar(@PathVariable Integer id) {
+        try {
+            EncomendaCatalogo atualizada = encomendaService.pagarEncomenda(id);
+            return ResponseEntity.ok(atualizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
 }
