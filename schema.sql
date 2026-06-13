@@ -22,15 +22,6 @@ CREATE TABLE IF NOT EXISTS utilizador (
     morada_faturacao TEXT
 );
 
--- artigo_catalogo
-CREATE TABLE IF NOT EXISTS artigo_catalogo (
-    id_artigo      SERIAL PRIMARY KEY,
-    nome           VARCHAR(255)    NOT NULL,
-    preco_unitario NUMERIC(10, 2)  NOT NULL,
-    stock          INTEGER         DEFAULT 0,
-    visivel        BOOLEAN         DEFAULT TRUE
-);
-
 -- projeto_personalizado
 CREATE TABLE IF NOT EXISTS projeto_personalizado (
     id_projeto     SERIAL PRIMARY KEY,
@@ -40,6 +31,16 @@ CREATE TABLE IF NOT EXISTS projeto_personalizado (
     briefing       TEXT,
     data_criacao   TIMESTAMPTZ  DEFAULT CURRENT_TIMESTAMP,
     estado_atual   VARCHAR(255) DEFAULT 'briefing'
+);
+
+-- artigo_catalogo (id_projeto_origem created after projeto_personalizado due to FK)
+CREATE TABLE IF NOT EXISTS artigo_catalogo (
+    id_artigo          SERIAL PRIMARY KEY,
+    nome               VARCHAR(255)    NOT NULL,
+    preco_unitario     NUMERIC(10, 2)  NOT NULL,
+    stock              INTEGER         DEFAULT 0,
+    visivel            BOOLEAN         DEFAULT TRUE,
+    id_projeto_origem  INTEGER         REFERENCES projeto_personalizado(id_projeto)
 );
 
 -- ficha_tecnica

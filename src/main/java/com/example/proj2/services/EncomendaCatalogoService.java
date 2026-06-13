@@ -211,6 +211,36 @@ public class EncomendaCatalogoService {
         return saved;
     }
 
+    public List<EncomendaCatalogo> findPendentesAprovacao() {
+        return repository.findByEstadoWithRelations("aguarda_aprovacao");
+    }
+
+    @Transactional
+    public EncomendaCatalogo aprovarEncomenda(Integer encomendaId, BigDecimal preco) {
+        EncomendaCatalogo encomenda = repository.findById(encomendaId)
+            .orElseThrow(() -> new IllegalArgumentException("Encomenda não encontrada."));
+        if (!"aguarda_aprovacao".equals(encomenda.getEstado())) {
+            throw new IllegalStateException("Esta encomenda não está pendente de aprovação.");
+        }
+        if (preco == null || preco.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Preço inválido.");
+        }
+        encomenda.setValorFinal(preco);
+        encomenda.setEstado("aprovado");
+        return repository.save(encomenda);
+    }
+
+    @Transactional
+    public EncomendaCatalogo rejeitarEncomenda(Integer encomendaId) {
+        EncomendaCatalogo encomenda = repository.findById(encomendaId)
+            .orElseThrow(() -> new IllegalArgumentException("Encomenda não encontrada."));
+        if (!"aguarda_aprovacao".equals(encomenda.getEstado())) {
+            throw new IllegalStateException("Esta encomenda não está pendente de aprovação.");
+        }
+        encomenda.setEstado("rejeitado");
+        return repository.save(encomenda);
+    }
+
     @Transactional
     public EncomendaCatalogo reencomendarProjeto(Integer projetoId, Integer quantidade) {
         ProjetoPersonalizado projeto = projetoRepository.findById(projetoId)
@@ -223,14 +253,32 @@ public class EncomendaCatalogoService {
         if (utilizador == null) {
             throw new IllegalArgumentException("Projeto sem utilizador associado.");
         }
+
+        // Verificar se o artigo de origem precisa de aprovação
+        // Precisa de aprovação se: artigo não existe, está invisível, sem stock ou sem preço
+        ArtigoCatalogo artigoOrigem = artigoRepository.findByIdProjetoOrigem(projeto).orElse(null);
+        boolean precisaAprovacao = artigoOrigem == null || (
+            Boolean.FALSE.equals(artigoOrigem.getVisivel()) ||
+            artigoOrigem.getStock() == null || artigoOrigem.getStock() <= 0 ||
+            artigoOrigem.getPrecoUnitario() == null || artigoOrigem.getPrecoUnitario().compareTo(BigDecimal.ZERO) <= 0
+        );
+
         nova.setIdUtilizador(utilizador);
         nova.setIdProjeto(projeto);
-        nova.setEstado("carrinho");
+        nova.setEstado(precisaAprovacao ? "aguarda_aprovacao" : "carrinho");
         nova.setDataPedido(Instant.now());
         nova.setValorFinal(BigDecimal.ZERO);
         nova = repository.save(nova);
 
         if (ultimaOpt.isEmpty()) {
+            // Sempre cria o item se existir artigo (mesmo aguarda_aprovacao) para guardar a quantidade
+            if (artigoOrigem != null) {
+                ItemEncomenda item = new ItemEncomenda();
+                item.setIdEncomenda(nova);
+                item.setIdArtigo(artigoOrigem);
+                item.setQuantidade(quantidade != null && quantidade > 0 ? quantidade : 1);
+                itemRepository.save(item);
+            }
             return nova;
         }
 

@@ -11,8 +11,10 @@ import com.example.proj2.models.ArtigoCatalogo;
 import com.example.proj2.models.FichaTecnica;
 import com.example.proj2.models.ProjetoPersonalizado;
 import com.example.proj2.repository.ArtigoCatalogoRepository;
+import com.example.proj2.repository.ArtesaRepository;
 import com.example.proj2.repository.FichaTecnicaRepository;
 import com.example.proj2.repository.ProjetoPersonalizadoRepository;
+import com.example.proj2.repository.UtilizadorRepository;
 import com.example.proj2.models.Utilizador;
 import com.example.proj2.models.Artesa;
 
@@ -27,6 +29,12 @@ public class ProjetoPersonalizadoService {
 
     @Autowired
     private FichaTecnicaRepository fichaRepository;
+
+    @Autowired
+    private UtilizadorRepository utilizadorRepository;
+
+    @Autowired
+    private ArtesaRepository artesaRepository;
 
     public List<ProjetoPersonalizado> findAll() {
         return repository.findAll();
@@ -43,6 +51,15 @@ public class ProjetoPersonalizadoService {
             }
             if (projeto.getEstadoAtual() == null || projeto.getEstadoAtual().isBlank()) {
                 projeto.setEstadoAtual("briefing");
+            }
+            // Resolve detached JPA entities so the FK columns are persisted correctly
+            if (projeto.getIdUtilizador() != null && projeto.getIdUtilizador().getId() != null) {
+                utilizadorRepository.findById(projeto.getIdUtilizador().getId())
+                    .ifPresent(projeto::setIdUtilizador);
+            }
+            if (projeto.getIdArtesa() != null && projeto.getIdArtesa().getId() != null) {
+                artesaRepository.findById(projeto.getIdArtesa().getId())
+                    .ifPresent(projeto::setIdArtesa);
             }
         }
         ProjetoPersonalizado saved = repository.save(projeto);
@@ -72,7 +89,7 @@ public class ProjetoPersonalizadoService {
             ProjetoPersonalizado p = existing.get();
             p.setEstadoAtual(estado);
             ProjetoPersonalizado saved = save(p);
-            if ("concluido".equalsIgnoreCase(estado)) {
+            if ("concluido".equalsIgnoreCase(estado) || "completed".equalsIgnoreCase(estado)) {
                 concluirProjeto(saved);
             }
             return saved;
