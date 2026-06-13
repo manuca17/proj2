@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS artigo_catalogo (
     preco_unitario     NUMERIC(10, 2)  NOT NULL,
     stock              INTEGER         DEFAULT 0,
     visivel            BOOLEAN         DEFAULT TRUE,
+    foto_url           VARCHAR(500),
     id_projeto_origem  INTEGER         REFERENCES projeto_personalizado(id_projeto)
 );
 

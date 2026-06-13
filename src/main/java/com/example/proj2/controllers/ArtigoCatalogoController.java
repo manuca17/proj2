@@ -77,6 +77,9 @@ public class ArtigoCatalogoController {
         if (artigo.getVisivel() != null) {
             existing.setVisivel(artigo.getVisivel());
         }
+        if (artigo.getFotoUrl() != null) {
+            existing.setFotoUrl(artigo.getFotoUrl());
+        }
 
         if (artigo.getFichasTecnicas() != null) {
             existing.setFichasTecnicas(artigo.getFichasTecnicas());

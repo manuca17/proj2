@@ -39,6 +39,9 @@ public class ArtigoCatalogo {
     @Column(name = "visivel")
     private Boolean visivel;
 
+    @Column(name = "foto_url", length = 500)
+    private String fotoUrl;
+
     public Integer getId() {
         return id;
     }
@@ -91,6 +94,14 @@ public class ArtigoCatalogo {
 
     public void setVisivel(Boolean visivel) {
         this.visivel = visivel;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public void setFotoUrl(String fotoUrl) {
+        this.fotoUrl = fotoUrl;
     }
 
     public ProjetoPersonalizado getIdProjetoOrigem() {
