@@ -37,7 +37,7 @@ public class ProjetoPersonalizadoService {
     private ArtesaRepository artesaRepository;
 
     public List<ProjetoPersonalizado> findAll() {
-        return repository.findAll();
+        return repository.findAllWithRelations();
     }
 
     public Optional<ProjetoPersonalizado> findById(Integer id) {
