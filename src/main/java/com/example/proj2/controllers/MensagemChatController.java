@@ -102,8 +102,13 @@ public class MensagemChatController {
         if (artesa == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artesã não encontrada.");
         }
-        if (mensagem.getConteudo() == null || mensagem.getConteudo().isBlank()) {
-            return ResponseEntity.badRequest().body("O conteúdo da mensagem é obrigatório.");
+        boolean hasConteudo = mensagem.getConteudo() != null && !mensagem.getConteudo().isBlank();
+        boolean hasFoto = mensagem.getUrlFoto() != null && !mensagem.getUrlFoto().isBlank();
+        if (!hasConteudo && !hasFoto) {
+            return ResponseEntity.badRequest().body("A mensagem deve ter conteúdo ou uma foto.");
+        }
+        if (!hasConteudo) {
+            mensagem.setConteudo("");
         }
 
         mensagem.setIdProjeto(projeto);
