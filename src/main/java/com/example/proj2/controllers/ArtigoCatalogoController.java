@@ -6,6 +6,7 @@ import com.example.proj2.models.FichaTecnica;
 import com.example.proj2.repository.ArtigoFotoRepository;
 import com.example.proj2.services.ArtigoCatalogoService;
 import com.example.proj2.services.FichaTecnicaService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -97,8 +98,13 @@ public class ArtigoCatalogoController {
         if (service.findById(artigoId).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Artigo não encontrado.");
         }
-        service.deleteById(artigoId);
-        return ResponseEntity.noContent().build();
+        try {
+            service.deleteById(artigoId);
+            return ResponseEntity.noContent().build();
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Este produto está associado a encomendas existentes e não pode ser eliminado. Desative-o em vez disso.");
+        }
     }
 
     // POST /api/artigos-catalogo/{artigoId}/fotos

@@ -42,7 +42,7 @@ public class EncomendaCatalogoService {
     private PagamentoRepository pagamentoRepository;
 
     public List<EncomendaCatalogo> findAll() {
-        return repository.findAll();
+        return repository.findAllWithRelations();
     }
 
     public Optional<EncomendaCatalogo> findById(Integer id) {

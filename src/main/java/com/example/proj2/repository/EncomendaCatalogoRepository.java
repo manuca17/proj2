@@ -23,6 +23,10 @@ public interface EncomendaCatalogoRepository extends JpaRepository<EncomendaCata
 
     List<EncomendaCatalogo> findByEstado(String estado);
 
+    @EntityGraph(attributePaths = {"idUtilizador"})
+    @Query("SELECT e FROM EncomendaCatalogo e")
+    List<EncomendaCatalogo> findAllWithRelations();
+
     @EntityGraph(attributePaths = {"idUtilizador", "idProjeto", "idProjeto.idUtilizador"})
     @Query("SELECT e FROM EncomendaCatalogo e WHERE e.estado = :estado")
     List<EncomendaCatalogo> findByEstadoWithRelations(@Param("estado") String estado);

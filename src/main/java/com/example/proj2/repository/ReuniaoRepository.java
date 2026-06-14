@@ -12,6 +12,9 @@ public interface ReuniaoRepository extends JpaRepository<Reuniao, Integer> {
     @Query("SELECT r FROM Reuniao r WHERE r.idProjeto = ?1")
     List<Reuniao> findByIdProjeto(ProjetoPersonalizado projeto);
 
+    @Query("SELECT r FROM Reuniao r LEFT JOIN FETCH r.idProjeto")
+    List<Reuniao> findAllWithRelations();
+
     @Query("SELECT r FROM Reuniao r WHERE r.idProjeto.id = ?1")
     List<Reuniao> findByIdProjetoId(Integer projetoId);
 

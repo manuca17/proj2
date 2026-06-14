@@ -15,7 +15,7 @@ public class ReuniaoService {
     private ReuniaoRepository repository;
 
     public List<Reuniao> findAll() {
-        return repository.findAll();
+        return repository.findAllWithRelations();
     }
 
     public Optional<Reuniao> findById(Integer id) {
